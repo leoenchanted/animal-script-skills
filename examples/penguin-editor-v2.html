@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企鹅科普文案编辑器</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; height: 100vh; display: flex; flex-direction: column; }
+        .header { background: #16213e; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #0f3460; flex-shrink: 0; }
+        .header h1 { font-size: 1.2rem; color: #e94560; }
+        .header-buttons { display: flex; gap: 8px; }
+        .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.3s; }
+        .btn-primary { background: #e94560; color: white; }
+        .btn-primary:hover { background: #ff6b6b; }
+        .btn-secondary { background: #0f3460; color: #eee; }
+        .btn-secondary:hover { background: #1a4b8c; }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .panel-header { background: #16213e; padding: 8px 15px; font-size: 13px; color: #888; border-bottom: 1px solid #0f3460; flex-shrink: 0; }
+        .editor-panel { border-right: 1px solid #0f3460; }
+        .editor { flex: 1; resize: none; padding: 15px; background: #1a1a2e; color: #eee; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 1.5; border: none; outline: none; overflow-y: auto; }
+        .preview-panel { background: #0f0f23; }
+        .preview { flex: 1; padding: 15px 25px; overflow-y: auto; line-height: 1.7; }
+        .preview h1 { font-size: 1.8rem; color: #e94560; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e94560; }
+        .preview h2 { font-size: 1.3rem; color: #ff6b6b; margin: 20px 0 12px; }
+        .preview h3 { font-size: 1.1rem; color: #ffa502; margin: 15px 0 8px; }
+        .preview p { margin: 12px 0; color: #ddd; }
+        .preview strong { color: #e94560; font-weight: 600; }
+        .preview ul, .preview ol { margin: 12px 0; padding-left: 20px; }
+        .preview li { margin: 6px 0; color: #ccc; }
+        .preview blockquote { background: #16213e; padding: 12px 15px; margin: 15px 0; border-left: 4px solid #e94560; border-radius: 0 6px 6px 0; color: #aaa; font-size: 0.9em; }
+        .preview code { background: #16213e; padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', monospace; color: #00d9ff; }
+        .preview pre { background: #16213e; padding: 12px; border-radius: 6px; overflow-x: auto; margin: 12px 0; }
+        .preview pre code { background: none; padding: 0; }
+        .preview a { color: #00d9ff; text-decoration: none; }
+        .preview a:hover { text-decoration: underline; }
+        .preview hr { border: none; border-top: 1px solid #0f3460; margin: 25px 0; }
+        .preview table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.9em; }
+        .preview th, .preview td { padding: 10px; border: 1px solid #0f3460; text-align: left; }
+        .preview th { background: #16213e; color: #e94560; }
+
+        /* 图片画廊样式 */
+        .gallery-section { margin: 30px 0; padding: 20px; background: #16213e; border-radius: 8px; }
+        .gallery-title { font-size: 1.2rem; color: #ffa502; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .gallery-item { position: relative; border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.3s; }
+        .gallery-item:hover { transform: scale(1.05); }
+        .gallery-item img { width: 100%; height: 150px; object-fit: cover; display: block; }
+        .gallery-item .source-label { position: absolute; bottom: 0; left: 0; right: 0; padding: 8px; background: rgba(0,0,0,0.7); font-size: 0.75rem; color: #aaa; }
+        .gallery-item .source-label a { color: #00d9ff; }
+
+        /* 参考来源样式 */
+        .references-section { margin: 30px 0; padding: 20px; background: #16213e; border-radius: 8px; }
+        .references-title { font-size: 1.2rem; color: #ffa502; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .reference-list { list-style: none; padding: 0; }
+        .reference-list li { margin: 8px 0; padding: 10px 15px; background: #1a1a2e; border-radius: 6px; display: flex; align-items: center; gap: 10px; }
+        .reference-list li::before { content: "📄"; font-size: 1rem; }
+        .reference-list li a { color: #00d9ff; text-decoration: none; flex: 1; }
+        .reference-list li a:hover { text-decoration: underline; }
+        .reference-list.image-refs li::before { content: "📷"; }
+
+        .sync-indicator { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #e94560; color: white; padding: 10px 20px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; z-index: 100; }
+        @media (max-width: 768px) { .main-container { flex-direction: column; } .editor-panel { border-right: none; border-bottom: 1px solid #0f3460; } .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🦁 企鹅科普文案编辑器</h1>
+        <div class="header-buttons">
+            <button class="btn btn-secondary" onclick="copyMarkdown()">📋 复制原文</button>
+            <button class="btn btn-secondary" onclick="copyHTML()">📄 复制HTML</button>
+            <button class="btn btn-secondary" onclick="downloadHTML()">💾 保存</button>
+            <button class="btn btn-primary" onclick="clearEditor()">🗑 清空</button>
+        </div>
+    </div>
+    <div class="main-container">
+        <div class="panel editor-panel">
+            <div class="panel-header">📝 Markdown 源码（可编辑）</div>
+            <textarea class="editor" id="editor"># 🐧 企鹅：穿"西装"的南极生存狠人
+
+## 📌 开篇悬念
+
+你敢相信吗？眼前这只 **穿着黑白"西装"、走路摇摇晃晃的企鹅**，居然是地球上最抗冻的动物之一！它们能在 **-60°C的极寒风暴中抱团取暖**，潜水深度超过 **500米**，游泳速度可达 **35公里/小时**——比很多专业游泳运动员还快！
+
+---
+
+## 🔬 基本档案
+
+| 项目 | 详情 |
+|:---|:---|
+| **学名** | Spheniscidae（企鹅科） |
+| **分类** | 鸟纲 > 企鹅目 > 企鹅科 |
+| **种类** | 现存约 **18-20种** |
+| **体长** | 30cm ~ 120cm |
+| **体重** | 1kg ~ 40kg |
+| **寿命** | 野生15-20年 / 圈养可达30年 |
+
+---
+
+## 🎨 外形特征
+
+企鹅拥有标志性的 **黑白配色**：背部黑色或深灰，腹部雪白。这种配色是完美的 **伪装策略**——从上方看，黑色背部融入深色海洋；从下方看，白色腹部与明亮水面融为一体。
+
+**身体构造特点**：
+- **翅膀退化成鳍状肢**：不能飞行，但游泳效率极高
+- **流线型身体**：减少水中阻力，游泳时像鱼雷
+- **厚实羽毛层**：约 **100根羽毛/平方厘米**，超强保温
+- **脂肪储备**：帝企鹅有 **3-4cm厚的脂肪层**
+
+---
+
+## 🏠 栖息环境
+
+企鹅并非只生活在南极！分布范围包括：
+- **南极洲**：帝企鹅、阿德利企鹅
+- **亚南极岛屿**：王企鹅、跳岩企鹅
+- **南美洲**：麦哲伦企鹅、洪堡企鹅
+- **非洲**：非洲企鹅（南非海岸）
+- **澳洲/新西兰**：小蓝企鹅
+- **赤道**：加拉帕戈斯企鹅——唯一生活在北半球的企鹅！
+
+---
+
+## 🎭 生活习性
+
+企鹅是典型的 **群居动物**：
+- 繁殖期聚集成数千只的庞大群落
+- 帝企鹅群落可达 **数万只**
+- 非繁殖期分散觅食
+
+**抱团取暖** 是企鹅最经典的生存技能：
+- 帝企鹅在极寒风暴中 **紧密抱团**
+- 群体中心温度可达 **37°C**
+- 外围企鹅轮流轮换位置
+- 节省 **50%的能量消耗**
+
+---
+
+## 🍽️ 饮食策略
+
+企鹅是纯粹的 **肉食动物**，主要食物：
+- **鱼类**：南极鱼、鳀鱼、沙丁鱼
+- **磷虾**：南极企鹅主食
+- **乌贼**：深潜种类的重要食物
+
+**捕猎技巧**：
+- 游泳速度达 **35km/h**
+- 帝企鹅可潜至 **500+米**，停留20分钟
+- 有时成群围捕鱼群
+
+---
+
+## 💕 繁殖与生命周期
+
+**求偶仪式**：
+- 独特的叫声识别伴侣
+- 部分种类送石头给伴侣
+- 多数企鹅一夫一妻，每年重逢
+
+**雄性孵蛋传奇**（帝企鹅）：
+- 雄企鹅将蛋放在脚背上，用腹部羽毛覆盖
+- 在 **-40°C到-60°C** 的风暴中站立 **约65天**
+- **不吃不喝**，仅靠脂肪储备生存
+- 期间体重减少 **40%以上**
+
+---
+
+## 🛡️ 保护现状
+
+| 种类 | IUCN状态 | 趋势 |
+|:---|:---|:---|
+| 帝企鹅 | 近危（NT） | ↓下降 |
+| 王企鹅 | 近危（NT） | ↓下降 |
+| 阿德利企鹅 | 无危（LC） | →稳定 |
+| 非洲企鹅 | 濒危（EN） | ↓↓快速下降 |
+
+**主要威胁**：气候变化、过度捕捞、海洋污染
+
+---
+
+## 💡 科学发现与趣闻
+
+**颠覆认知的冷知识**：
+1. 企鹅"膝盖"藏在身体里，外表看不到
+2. 企鹅可以喝盐水，特殊腺体过滤盐分
+3. 加拉帕戈斯企鹅生活在赤道，靠凉爽洋流生存
+4. 企鹅不会尿尿，尿酸直接排出节约水分
+5. 跳岩企鹅能跳2米高的岩石
+
+---
+
+## 🌍 生存智慧启示
+
+在极寒环境中，企鹅靠着 **厚羽毛+厚脂肪+抱团取暖** 顽强生存了数千万年。
+
+**外表的"呆萌"可能只是表象，真正的强者，往往在你看不见的地方默默坚持。**</textarea>
+        </div>
+        <div class="panel preview-panel">
+            <div class="panel-header">👁 实时预览 + 图片画廊 + 参考来源</div>
+            <div class="preview" id="preview"></div>
+        </div>
+    </div>
+    <script>
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        marked.setOptions({ breaks: true, gfm: true });
+
+        // 图片数据（已验证有效的链接）
+        const images = [
+            { url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Emperor_Penguin_with_chick.jpg/300px-Emperor_Penguin_with_chick.jpg', source: 'Wikimedia Commons', sourceUrl: 'https://commons.wikimedia.org/wiki/File:Emperor_Penguin_with_chick.jpg', desc: '帝企鹅与幼崽' },
+            { url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Emperor_penguins_with_chick.jpg/300px-Emperor_penguins_with_chick.jpg', source: 'Wikimedia Commons', sourceUrl: 'https://commons.wikimedia.org/wiki/File:Emperor_penguins_with_chick.jpg', desc: '帝企鹅家族' },
+            { url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Emperor_penguin_chick_at_Snow_Hill_Island.jpg/300px-Emperor_penguin_chick_at_Snow_Hill_Island.jpg', source: 'Wikimedia Commons', sourceUrl: 'https://commons.wikimedia.org/wiki/File:Emperor_penguin_chick_at_Snow_Hill_Island.jpg', desc: '企鹅幼崽' },
+            { url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Antarctica_655.jpg/300px-Antarctica_655.jpg', source: 'Wikimedia Commons', sourceUrl: 'https://commons.wikimedia.org/wiki/File:Antarctica_655.jpg', desc: '企鹅栖息地' },
+            { url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Penguin_size_comparison.svg/400px-Penguin_size_comparison.svg.png', source: 'Wikimedia Commons', sourceUrl: 'https://commons.wikimedia.org/wiki/File:Penguin_size_comparison.svg', desc: '企鹅种类对比' }
+        ];
+
+        // 参考来源数据
+        const textSources = [
+            { name: 'National Geographic - Penguins', url: 'https://www.nationalgeographic.com/animals/birds/group/penguins/' },
+            { name: 'IUCN Red List - Penguin Species', url: 'https://www.iucnredlist.org/' },
+            { name: 'Britannica - Penguin', url: 'https://www.britannica.com/animal/penguin' },
+            { name: 'WWF - Antarctic Penguins', url: 'https://www.worldwildlife.org/stories/antarctic-penguins' },
+            { name: 'Wikipedia - Penguin', url: 'https://en.wikipedia.org/wiki/Penguin' }
+        ];
+
+        const imageSources = images.map(img => ({ name: img.desc + ' - ' + img.source, url: img.sourceUrl }));
+
+        function updatePreview() {
+            const text = editor.value;
+            if (text.trim()) {
+                // 渲染 Markdown 内容
+                let html = marked.parse(text);
+
+                // 添加分隔线
+                html += '<hr>';
+
+                // 添加图片画廊
+                html += '<div class="gallery-section">';
+                html += '<div class="gallery-title">📷 图片画廊</div>';
+                html += '<div class="gallery-grid">';
+                images.forEach(img => {
+                    html += `<div class="gallery-item" onclick="window.open('${img.url}', '_blank')">`;
+                    html += `<img src="${img.url}" alt="${img.desc}" onerror="this.style.display='none'">`;
+                    html += `<div class="source-label">${img.desc}<br><a href="${img.sourceUrl}" target="_blank">${img.source}</a></div>`;
+                    html += '</div>';
+                });
+                html += '</div></div>';
+
+                // 添加分隔线
+                html += '<hr>';
+
+                // 添加文字来源
+                html += '<div class="references-section">';
+                html += '<div class="references-title">📚 参考来源 - 文字来源</div>';
+                html += '<ul class="reference-list">';
+                textSources.forEach(src => {
+                    html += `<li><a href="${src.url}" target="_blank">${src.name}</a></li>`;
+                });
+                html += '</ul>';
+
+                // 添加图片来源
+                html += '<div class="references-title" style="margin-top:20px;">📷 图片来源</div>';
+                html += '<ul class="reference-list image-refs">';
+                imageSources.forEach(src => {
+                    html += `<li><a href="${src.url}" target="_blank">${src.name}</a></li>`;
+                });
+                html += '</ul></div>';
+
+                preview.innerHTML = html;
+            } else {
+                preview.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">右侧将实时显示排版效果</div>';
+            }
+        }
+
+        editor.addEventListener('input', updatePreview);
+
+        function copyMarkdown() { navigator.clipboard.writeText(editor.value).then(() => showToast('Markdown 已复制！')); }
+        function copyHTML() { navigator.clipboard.writeText(preview.innerHTML).then(() => showToast('HTML 已复制！')); }
+
+        function downloadHTML() {
+            const htmlContent = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>企鹅科普文案</title>
+<style>body{font-family:-apple-system,sans-serif;max-width:900px;margin:40px auto;padding:20px;line-height:1.8;background:#fff;color:#333}
+h1{color:#e94560;border-bottom:2px solid #e94560;padding-bottom:10px}
+h2{color:#ff6b6b;margin:25px 0 15px}
+h3{color:#ffa502;margin:20px 0 10px}
+strong{color:#e94560}
+table{width:100%;border-collapse:collapse;margin:20px 0}
+th,td{padding:12px;border:1px solid #ddd}
+th{background:#f5f5f5;color:#e94560}
+a{color:#0066cc}
+.gallery-section{margin:30px 0;padding:20px;background:#f5f5f5;border-radius:8px}
+.gallery-title{font-size:1.2rem;color:#ffa502;margin-bottom:15px}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px}
+.gallery-item{position:relative;border-radius:8px;overflow:hidden;cursor:pointer}
+.gallery-item img{width:100%;height:150px;object-fit:cover}
+.gallery-item .source-label{position:absolute;bottom:0;left:0;right:0;padding:8px;background:rgba(0,0,0,0.7);font-size:0.75rem;color:#fff}
+.references-section{margin:30px 0;padding:20px;background:#f5f5f5;border-radius:8px}
+.reference-list{list-style:none;padding:0}
+.reference-list li{margin:8px 0;padding:10px;background:#fff;border-radius:6px}
+</style></head><body>${preview.innerHTML}</body></html>`;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = '企鹅科普文案.html';
+            a.click();
+            showToast('HTML 已保存！');
+        }
+
+        function clearEditor() { if (confirm('确定清空？')) { editor.value = ''; updatePreview(); } }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'sync-indicator';
+            toast.textContent = msg;
+            toast.style.opacity = '1';
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 1500);
+        }
+
+        updatePreview();
+    </script>
+</body>
+</html>
