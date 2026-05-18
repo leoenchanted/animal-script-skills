@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>动物科普视频分镜工作台</title>
+  <style>
+    :root {
+      --paper: #f6f3ea;
+      --ink: #17211b;
+      --muted: #667064;
+      --line: #cbd2c3;
+      --bamboo: #2f7a4f;
+      --leaf: #8cb369;
+      --coral: #e45745;
+      --blue: #2d5f7a;
+      --panel: #fffdf6;
+      --shadow: 0 18px 50px rgba(34, 45, 36, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.52)),
+        repeating-linear-gradient(90deg, transparent 0 35px, rgba(47, 122, 79, 0.06) 35px 36px),
+        var(--paper);
+    }
+
+    button,
+    textarea {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1440px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: start;
+      padding: 22px 0 18px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--bamboo);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 880px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(32px, 4vw, 64px);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 8px;
+      min-width: min(560px, 100%);
+    }
+
+    .metric {
+      padding: 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 4px 4px 0 rgba(23, 33, 27, 0.12);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 22px;
+      margin-top: 22px;
+      align-items: start;
+    }
+
+    .main {
+      display: grid;
+      gap: 16px;
+    }
+
+    .side {
+      position: sticky;
+      top: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .section,
+    .shot-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .section {
+      padding: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .copy-btn,
+    .ghost-btn {
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: white;
+      min-height: 34px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .ghost-btn {
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .copy-btn:hover,
+    .ghost-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0 rgba(23, 33, 27, 0.18);
+    }
+
+    .role-text,
+    .voiceover {
+      width: 100%;
+      min-height: 140px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      background: #fffaf0;
+      color: var(--ink);
+      padding: 12px;
+      line-height: 1.65;
+      outline: none;
+    }
+
+    .voiceover {
+      min-height: 320px;
+    }
+
+    .shot-card {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      overflow: hidden;
+    }
+
+    .shot-rail {
+      padding: 16px 12px;
+      background: var(--ink);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 22px;
+    }
+
+    .shot-number {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 42px;
+      line-height: 1;
+    }
+
+    .shot-time {
+      color: #dce8d7;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .shot-body {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .shot-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .field textarea {
+      width: 100%;
+      min-height: 96px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      background: #fffaf0;
+      color: var(--ink);
+      padding: 10px;
+      line-height: 1.55;
+      outline: none;
+    }
+
+    .field textarea.prompt {
+      min-height: 138px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .fact {
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .source-list {
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.75;
+    }
+
+    .source-list a {
+      color: var(--blue);
+      text-decoration-thickness: 2px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: white;
+      padding: 10px 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      z-index: 10;
+      box-shadow: 6px 6px 0 rgba(23, 33, 27, 0.18);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 1100px) {
+      .topbar,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        min-width: 0;
+      }
+
+      .side {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        width: min(100% - 20px, 1440px);
+        padding-top: 12px;
+      }
+
+      .summary,
+      .shot-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .shot-card {
+        grid-template-columns: 1fr;
+      }
+
+      .shot-rail {
+        flex-direction: row;
+        align-items: end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Animal Video Script Desk</p>
+        <h1>大熊猫科普短视频分镜工作台</h1>
+      </div>
+      <div class="summary" aria-label="视频概览">
+        <div class="metric"><span>动物</span><strong>大熊猫</strong></div>
+        <div class="metric"><span>时长</span><strong>约 75 秒</strong></div>
+        <div class="metric"><span>镜头</span><strong>11 个</strong></div>
+        <div class="metric"><span>风格</span><strong>卡通科普</strong></div>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="main" id="shotList" aria-label="分镜列表"></section>
+
+      <aside class="side">
+        <section class="section">
+          <div class="section-title">
+            <h2>统一角色设定</h2>
+            <button class="ghost-btn" data-copy-target="roleSetting">复制</button>
+          </div>
+          <textarea class="role-text" id="roleSetting">主角是一只卡通大熊猫，圆脸，黑眼圈明显，身体胖乎乎，黑白毛色干净，表情灵动可爱。整体风格为高质量儿童科普动画，色彩明亮，柔和自然光，竹林背景清新，所有镜头保持同一角色外观和 16:9 横屏构图。通用负面限制：无文字、无水印、无 logo、不要真实照片风、不要畸形肢体、不要多余动物、不要恐怖血腥。</textarea>
+        </section>
+
+        <section class="section">
+          <div class="section-title">
+            <h2>完整口播稿</h2>
+            <button class="ghost-btn" data-copy-target="voiceover">复制</button>
+          </div>
+          <textarea class="voiceover" id="voiceover">你敢相信吗？这只看起来只会卖萌的大熊猫，其实是竹林里的生存专家。
+
+它的学名叫 Ailuropoda melanoleuca，是熊科成员，也属于食肉目。最反差的是，它身体结构更像食肉动物，却把竹子当成主食。
+
+为了吃够能量，它一天可能要花 10 到 16 个小时觅食和进食。它还有一个隐藏工具：像拇指一样的腕骨，能帮它牢牢抓住竹子。
+
+大熊猫的黑白配色也不只是好看，它可能帮助它在竹林和雪地里隐藏自己。虽然圆滚滚很亲切，但野外大熊猫大多独自生活，只在繁殖季更频繁交流。
+
+熊猫妈妈的育幼也很不容易，幼崽出生时非常小，需要长时间照顾。今天，野外大熊猫仍然不多，栖息地破碎化依旧是主要威胁。
+
+保护大熊猫，其实也在保护竹林里的许多其他生命。所以下次看到它卖萌，别忘了，它也是一位靠智慧活下来的竹林居民。</textarea>
+        </section>
+
+        <section class="section">
+          <div class="section-title">
+            <h2>事实来源</h2>
+          </div>
+          <ol class="source-list">
+            <li><a href="https://nationalzoo.si.edu/animals/giant-panda" target="_blank" rel="noreferrer">Smithsonian National Zoo</a></li>
+            <li><a href="https://www.worldwildlife.org/species/giant-panda/" target="_blank" rel="noreferrer">WWF Giant Panda</a></li>
+            <li><a href="https://www.britannica.com/animal/giant-panda" target="_blank" rel="noreferrer">Britannica Giant Panda</a></li>
+            <li><a href="https://www.iucnredlist.org/species/712/" target="_blank" rel="noreferrer">IUCN Red List</a></li>
+          </ol>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">已复制</div>
+
+  <script>
+    const shots = [
+      {
+        id: "01",
+        time: "0-5s",
+        narration: "你敢相信吗？这只看起来只会卖萌的大熊猫，其实是竹林里的生存专家。",
+        visual: "熊猫从竹林中探出头，表情可爱但带一点神秘感。",
+        promptCN: "卡通科普动画风格的大熊猫，圆脸黑眼圈，从翠绿竹林中探出头，表情呆萌但神秘，柔和电影感光影，色彩明亮，16:9，无文字，无水印，不要真实照片风",
+        promptEN: "Cartoon educational animation of a giant panda with a round face and black eye patches peeking from a lush bamboo forest, cute but slightly mysterious expression, soft cinematic lighting, bright colors, 16:9, no text, no watermark, not photorealistic",
+        motion: "快速推进，开场音效，标题字幕弹出",
+        fact: "Smithsonian / Britannica"
+      },
+      {
+        id: "02",
+        time: "5-10s",
+        narration: "它的学名叫 Ailuropoda melanoleuca，是熊科成员，也属于食肉目。",
+        visual: "熊猫站在干净背景中，旁边出现无文字的分类图形元素。",
+        promptCN: "卡通科普插画，大熊猫站在干净浅绿色背景中，旁边有简洁的无文字分类图形元素，角色居中清晰，儿童科普风，16:9，无文字，无水印",
+        promptEN: "Cartoon science illustration of a giant panda centered on a clean pale green background, simple classification-style shapes without text, clear character design, children's educational style, 16:9, no text, no watermark",
+        motion: "轻微横移，信息点依次出现",
+        fact: "Smithsonian taxonomy"
+      },
+      {
+        id: "03",
+        time: "10-16s",
+        narration: "最反差的是，它身体结构更像食肉动物，却把竹子当成主食。",
+        visual: "熊猫坐着吃竹子，身边堆着竹笋和竹叶。",
+        promptCN: "卡通大熊猫坐在竹林地面抱着竹子吃，身边有竹笋和竹叶堆，表情满足可爱，画面干净明亮，科普动画风，16:9，无文字，无水印",
+        promptEN: "Cartoon giant panda sitting on the bamboo forest floor eating bamboo, piles of bamboo shoots and leaves nearby, happy cute expression, clean bright educational animation style, 16:9, no text, no watermark",
+        motion: "咀嚼小动画，竹叶轻微晃动",
+        fact: "Smithsonian / Britannica"
+      },
+      {
+        id: "04",
+        time: "16-23s",
+        narration: "为了吃够能量，它一天可能要花 10 到 16 个小时觅食和进食。",
+        visual: "熊猫在竹林中边走边吃，时间流逝感。",
+        promptCN: "卡通科普动画，大熊猫在竹林里慢慢移动并吃竹子，画面表现一天时间流逝，阳光从清晨变到傍晚，温暖明亮，16:9，无文字，无水印",
+        promptEN: "Cartoon educational animation of a giant panda moving slowly through a bamboo forest while eating, subtle day-to-evening time passage, warm bright natural light, 16:9, no text, no watermark",
+        motion: "时间流逝转场，太阳光变化",
+        fact: "Smithsonian"
+      },
+      {
+        id: "05",
+        time: "23-30s",
+        narration: "它还有一个隐藏工具：像拇指一样的腕骨，能帮它牢牢抓住竹子。",
+        visual: "熊猫爪子抓竹子的特写，重点展示假拇指。",
+        promptCN: "卡通近景特写，大熊猫的前爪握住一根竹子，突出像拇指一样的腕骨结构，细节清晰但可爱，科普绘本风，16:9，无文字，无水印",
+        promptEN: "Cartoon close-up of a giant panda's front paw gripping a bamboo stalk, emphasizing the thumb-like wrist bone, clear cute educational picture book style, 16:9, no text, no watermark",
+        motion: "局部放大，高亮爪子动作",
+        fact: "Britannica"
+      },
+      {
+        id: "06",
+        time: "30-37s",
+        narration: "黑白配色也不只是好看，它可能帮助熊猫在竹林和雪地里隐藏自己。",
+        visual: "熊猫半藏在竹林和雪地交界的环境中。",
+        promptCN: "卡通自然场景，大熊猫半隐藏在竹林和雪地交界处，黑白毛色与环境形成伪装效果，柔和自然光，画面有层次，16:9，无文字，无水印",
+        promptEN: "Cartoon natural scene of a giant panda partly hidden between bamboo forest and snowy rocks, black-and-white fur creating camouflage, soft natural light, layered composition, 16:9, no text, no watermark",
+        motion: "镜头慢慢拉近，熊猫从背景中显现",
+        fact: "Smithsonian"
+      },
+      {
+        id: "07",
+        time: "37-44s",
+        narration: "虽然圆滚滚很亲切，但野外大熊猫大多独自生活，只在繁殖季更频繁交流。",
+        visual: "一只熊猫独自在山地竹林中行走。",
+        promptCN: "卡通纪录片风，大熊猫独自在山地竹林中行走，环境安静开阔，角色保持可爱但有野性，柔和光影，16:9，无文字，无水印",
+        promptEN: "Cartoon documentary-style scene of a giant panda walking alone through a mountain bamboo forest, quiet spacious environment, cute but wild feeling, soft lighting, 16:9, no text, no watermark",
+        motion: "缓慢横移，环境声铺底",
+        fact: "Smithsonian"
+      },
+      {
+        id: "08",
+        time: "44-52s",
+        narration: "熊猫妈妈的育幼也很不容易，幼崽出生时非常小，需要长时间照顾。",
+        visual: "熊猫妈妈抱着小幼崽，画面温暖。",
+        promptCN: "温暖卡通绘本风，大熊猫妈妈在竹林巢穴旁轻轻抱着很小的幼崽，画面温柔自然，柔和晨光，16:9，无文字，无水印",
+        promptEN: "Warm cartoon picture book style, a mother giant panda gently holding a tiny cub near a bamboo forest den, tender natural mood, soft morning light, 16:9, no text, no watermark",
+        motion: "柔和淡入，慢镜头，音乐变暖",
+        fact: "Britannica / Smithsonian"
+      },
+      {
+        id: "09",
+        time: "52-60s",
+        narration: "今天，野外大熊猫仍然不多，栖息地破碎化依旧是主要威胁。",
+        visual: "竹林被道路分割，熊猫站在一侧，情绪稍微庄重。",
+        promptCN: "卡通科普电影感画面，大熊猫站在被道路分割的竹林一侧，氛围温柔但略带担忧，环境清晰不过度阴暗，16:9，无文字，无水印",
+        promptEN: "Cinematic cartoon educational scene of a giant panda standing beside a fragmented bamboo forest divided by a road, gentle but concerned mood, clear environment, 16:9, no text, no watermark",
+        motion: "镜头拉远，音乐压低",
+        fact: "WWF / Smithsonian"
+      },
+      {
+        id: "10",
+        time: "60-68s",
+        narration: "保护大熊猫，其实也在保护竹林里的许多其他生命。",
+        visual: "熊猫身后出现竹林生态中的其他动物剪影。",
+        promptCN: "卡通生态科普场景，大熊猫站在竹林前景，背景有金丝猴、雉鸟等动物的柔和剪影，表现伞护种概念，明亮自然，16:9，无文字，无水印",
+        promptEN: "Cartoon ecology education scene, a giant panda in the foreground of a bamboo forest, soft silhouettes of other forest animals in the background, showing umbrella species concept, bright natural colors, 16:9, no text, no watermark",
+        motion: "背景剪影逐个浮现",
+        fact: "WWF"
+      },
+      {
+        id: "11",
+        time: "68-76s",
+        narration: "所以下次看到它卖萌，别忘了，它也是一位靠智慧活下来的竹林居民。",
+        visual: "熊猫回望镜头，竹叶飘落，温暖收尾。",
+        promptCN: "卡通短视频结尾画面，大熊猫在竹林小路上回望镜头，竹叶轻轻飘落，表情灵动可爱，温暖夕阳光，16:9，无文字，无水印",
+        promptEN: "Cartoon short-video closing shot of a giant panda looking back at the camera on a bamboo forest path, falling bamboo leaves, expressive cute face, warm sunset light, 16:9, no text, no watermark",
+        motion: "慢慢拉远，定格收尾，引导评论",
+        fact: "综合来源"
+      }
+    ];
+
+    const shotList = document.getElementById("shotList");
+    const toast = document.getElementById("toast");
+
+    function fieldTemplate(label, value, className = "") {
+      return `
+        <div class="field ${className}">
+          <label>${label}</label>
+          <textarea>${value}</textarea>
+        </div>
+      `;
+    }
+
+    function promptTemplate(label, value, id) {
+      return `
+        <div class="field">
+          <label>${label}</label>
+          <textarea class="prompt" id="${id}">${value}</textarea>
+        </div>
+      `;
+    }
+
+    function renderShots() {
+      shotList.innerHTML = shots.map((shot) => `
+        <article class="shot-card">
+          <div class="shot-rail">
+            <div class="shot-number">${shot.id}</div>
+            <div class="shot-time">${shot.time}</div>
+          </div>
+          <div class="shot-body">
+            <div class="shot-grid">
+              ${fieldTemplate("解说词", shot.narration)}
+              ${fieldTemplate("画面内容", shot.visual)}
+              ${promptTemplate("中文生图提示词", shot.promptCN, `cn-${shot.id}`)}
+              ${promptTemplate("English Prompt", shot.promptEN, `en-${shot.id}`)}
+              ${fieldTemplate("动效建议", shot.motion)}
+              <div class="field">
+                <label>事实依据</label>
+                <div class="fact">${shot.fact}</div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="copy-btn" data-copy-target="cn-${shot.id}">复制中文提示词</button>
+              <button class="ghost-btn" data-copy-target="en-${shot.id}">复制 English Prompt</button>
+            </div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1400);
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const helper = document.createElement("textarea");
+      helper.value = text;
+      helper.setAttribute("readonly", "");
+      helper.style.position = "fixed";
+      helper.style.left = "-9999px";
+      document.body.appendChild(helper);
+      helper.select();
+      document.execCommand("copy");
+      helper.remove();
+    }
+
+    document.addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-copy-target]");
+      if (!button) return;
+      const target = document.getElementById(button.dataset.copyTarget);
+      if (!target) return;
+      await copyText(target.value || target.textContent || "");
+      showToast("已复制到剪贴板");
+    });
+
+    renderShots();
+  </script>
+</body>
+</html>

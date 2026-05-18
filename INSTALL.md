@@ -4,40 +4,35 @@
 
 ### 方法 1：项目级安装（推荐）
 
-将 `animal-doc-skill` 文件夹内容复制到你的项目：
+把整个 `animal-video-script` skill 文件夹放到项目的 `.claude/skills/` 目录下：
 
 ```bash
-# 复制 skill.md 到项目的 skills 目录
 mkdir -p your-project/.claude/skills
-cp animal-doc-skill/skill.md your-project/.claude/skills/animal-doc.md
-
-# 复制默认模板（可选）
-mkdir -p your-project/.claude/templates
-cp animal-doc-skill/template-default.md your-project/.claude/templates/animal-template.md
+cp -R animal-script-skills-main your-project/.claude/skills/animal-video-script
 ```
 
-目录结构：
-```
+推荐目录结构：
+
+```text
 your-project/
 └── .claude/
     ├── skills/
-    │   └── animal-doc.md    # Skills 定义文件
+    │   └── animal-video-script/
+    │       ├── skill.md
+    │       ├── template-default.md
+    │       ├── template-guide.md
+    │       └── examples/
     └── templates/
-        └── animal-template.md  # 文案模板（可选）
+        └── animal-video-template.md  # 可选，自定义模板
 ```
 
 ### 方法 2：全局安装
 
-复制到 Claude Code 全局配置目录：
+复制到 Claude Code 全局 skills 目录：
 
 ```bash
-# Windows
-mkdir -p %USERPROFILE%\.claude\skills
-cp animal-doc-skill/skill.md %USERPROFILE%\.claude\skills\animal-doc.md
-
-# macOS/Linux
 mkdir -p ~/.claude/skills
-cp animal-doc-skill/skill.md ~/.claude/skills/animal-doc.md
+cp -R animal-script-skills-main ~/.claude/skills/animal-video-script
 ```
 
 ---
@@ -46,14 +41,17 @@ cp animal-doc-skill/skill.md ~/.claude/skills/animal-doc.md
 
 在 Claude Code 中输入：
 
-```
-我想了解老虎
+```text
+我想了解大熊猫，帮我做成 60 秒卡通科普视频脚本，每段都要有 AI 生图提示词
 ```
 
-如果 skills 正确安装，Claude 应会：
-1. 检查模板文件
-2. 开始多维度搜索
-3. 按模板生成文案
+如果 skill 正确触发，Claude 应该会：
+
+1. 搜索权威动物资料。
+2. 输出视频设定和统一角色设定。
+3. 生成逐镜头分镜表。
+4. 每个镜头给出中文生图提示词和英文 Prompt。
+5. 追加完整口播稿、剪辑建议和事实参考来源。
 
 ---
 
@@ -63,50 +61,58 @@ cp animal-doc-skill/skill.md ~/.claude/skills/animal-doc.md
 
 ```bash
 mkdir -p your-project/.claude/templates
-touch your-project/.claude/templates/animal-template.md
+touch your-project/.claude/templates/animal-video-template.md
 ```
 
 ### 步骤 2：编辑模板
 
-打开 `animal-template.md`，粘贴你想要的文案格式。
+在 `animal-video-template.md` 中写入你想固定的格式。建议至少包含：
+
+- 视频设定
+- 统一角色设定
+- 分镜脚本表格
+- 完整口播稿
+- AI 生图清单
+- 事实参考来源
 
 ### 步骤 3：使用
 
-告诉 Claude 你想了解的动物，它会自动读取模板并生成文案。
+告诉 Claude 想制作的动物视频主题，它会优先按你的模板生成。
 
 ---
 
 ## 文件清单
 
-```
-animal-doc-skill/
-├── skill.md              ✅ 必须复制（核心文件）
-├── template-default.md   ⭕ 可选复制（默认模板）
-├── README.md             ⭕ 说明文件（不需复制）
-├── INSTALL.md            ⭕ 安装指南（不需复制）
+```text
+animal-video-script/
+├── skill.md                         必须，核心执行说明
+├── template-default.md              推荐，默认视频脚本模板
+├── template-guide.md                推荐，模板编写指南
+├── README.md                        说明文件
+├── INSTALL.md                       安装指南
 └── examples/
-    └── panda-output.md   ⭕ 示例参考（不需复制）
+    ├── panda-video-script.md        新版分镜脚本示例
+    ├── video-script-editor.html     新版 HTML 分镜工作台
+    ├── panda-output.md              旧版 Markdown 示例
+    └── penguin-with-images.html     旧版图文 HTML 示例
 ```
 
 ---
 
 ## 常见问题
 
-### Q: Claude 没有触发 skills？
+### Q: 为什么不直接给真实图片？
 
-确保：
-- `skill.md` 文件名正确（不是 `animal-doc-skill.md`）
-- 文件位于 `.claude/skills/` 目录下
-- 用户输入包含触发关键词（"想了解"、"介绍一下"等）
+新版工作流是为 AI 生图视频制作设计的。它会给每个镜头生成提示词，让你在即梦、可灵、Midjourney、DALL-E、Stable Diffusion 等工具中生成统一风格画面。
 
-### Q: Claude 说找不到模板？
+### Q: 事实来源和 AI 画面是什么关系？
 
-正常行为。如果模板文件为空，Claude 会询问你提供模板。
+事实来源只用于保证解说内容准确。AI 画面是创作素材，不应被标注成真实摄影来源。
 
-### Q: 如何修改搜索维度？
+### Q: 角色每张图不一致怎么办？
 
-编辑 `skill.md` 中的"搜索维度表"，添加或删除维度。
+优先复制“统一角色设定”，再把单个镜头提示词接在后面一起使用。必要时在生图工具里固定 seed 或使用角色参考图。
 
-### Q: 输出的文案不符合预期？
+### Q: 能改成 9:16 竖屏吗？
 
-检查模板文件格式，或直接告诉 Claude 你想要的风格调整。
+可以。在用户请求或自定义模板中把比例从 16:9 改成 9:16，并要求所有镜头提示词继承这个比例。

@@ -1,93 +1,78 @@
-# Animal Doc - 动物科普文案生成器
+# Animal Video Script - 动物科普短视频脚本生成器
 
-一个专业的 Claude Code Skill，用于自动搜索权威文献资料并生成高质量的动物科普解说文案。
+一个用于生成动物科普短视频脚本的 Claude Code Skill。它会先搜索权威资料，再输出可直接用于视频制作的分镜脚本、卡通 AI 生图提示词、完整口播稿和剪辑建议。
 
 ## 功能特点
 
-- 🔍 **多维度权威搜索**：自动搜索 IUCN、National Geographic、WWF 等权威来源
-- 📝 **智能模板适配**：支持自定义文案模板，或使用内置模板
-- ✅ **真实数据保障**：只使用搜索到的真实资料，禁止编造
-- 🌍 **中英文双语搜索**：英文搜索确保权威性，中文输出便于阅读
+- **权威资料检索**：优先参考 IUCN、WWF、National Geographic、Britannica 等来源。
+- **短视频脚本化**：默认生成 60-90 秒脚本，拆成 10-15 个镜头。
+- **逐镜头生图提示词**：每段解说都配中文提示词和英文 Prompt。
+- **卡通风格统一**：先生成统一角色设定，减少 AI 生图角色不一致的问题。
+- **制作友好**：包含画面内容、动效建议、配音建议、BGM 方向和事实来源。
 
 ## 安装方法
 
-### 方法 1：复制到项目
+### 项目级安装
 
-将此 skills 文件夹复制到你的项目 `.claude/skills/` 目录下：
+复制整个文件夹到项目的 `.claude/skills/` 目录：
 
+```text
+your-project/.claude/skills/animal-video-script/
+├── skill.md
+├── template-default.md
+├── template-guide.md
+└── examples/
 ```
-your-project/.claude/skills/animal-doc/
-├── skill.md              # Skills 定义
-├── template-default.md   # 默认模板
-└── README.md             # 使用说明
+
+### 可选：自定义模板
+
+如果你想固定自己的视频脚本格式，可以创建：
+
+```text
+your-project/.claude/templates/animal-video-template.md
 ```
 
-### 方法 2：全局安装
-
-复制到 Claude Code 全局配置目录：
-
-```
-~/.claude/skills/animal-doc/
-```
+Claude 会优先读取这个模板；如果没有模板，就使用本目录的 `template-default.md`。
 
 ## 使用方法
 
-### 基本用法
+直接告诉 Claude 想做哪种动物视频：
 
-直接告诉 Claude 你想了解的动物：
-
-```
-我想了解老虎
-给我介绍一下熊猫
-帮我写一篇关于蓝鲸的科普文案
+```text
+帮我写一篇关于大熊猫的科普短视频脚本，要卡通生图提示词
+我想了解帝企鹅，做成 60 秒分镜脚本
+给我一个蓝鲸的视频脚本，每段都要有 AI 生图 Prompt
 ```
 
-### 使用自定义模板
-
-1. 创建模板文件 `.claude/templates/animal-template.md`
-2. 粘贴你想要的文案格式示例
-3. Claude 会自动读取并按模板生成
-
-### 如果没有模板
-
-Claude 会主动询问你提供参考格式。
-
-## 输出示例
+## 默认输出
 
 ```markdown
-【开头悬念】你敢相信吗？眼前这只老虎，居然是隐藏在大自然里的凶猛猎手！
+# [动物名称]科普短视频脚本
 
-【基础介绍】它叫老虎（Panthera tigris），主要栖息在亚洲热带雨林...
+## 视频设定
 
-【生活习性】看似威风凛凛，实则是独行侠...
+## 统一角色设定
 
-【参考来源】
-1. National Geographic - Tiger
-2. IUCN Red List - Panthera tigris
+## 分镜脚本
+
+| 镜头 | 时间 | 解说词 | 画面内容 | 中文生图提示词 | English Prompt | 动效建议 | 事实依据 |
+|:---|:---|:---|:---|:---|:---|:---|:---|
+
+## 完整口播稿
+
+## AI 生图清单
+
+## 剪辑与配音建议
+
+## 事实参考来源
 ```
 
-## 配置选项
+## 示例文件
 
-可在 `.claude/templates/animal-template.md` 中设置：
-- 文案风格（活泼/严谨/科普/趣味）
-- 目标受众（大众/儿童/学术）
-- 内容深度（简介/详细）
-
-## 文件结构
-
-```
-animal-doc-skill/
-├── skill.md              # Skills 主文件（Claude Code 读取）
-├── template-default.md   # 默认模板示例
-├── README.md             # 本说明文件
-└── examples/
-    └── output-example.md # 输出示例
-```
-
-## 作者
-
-Claude Code Skills Community
+- `examples/panda-video-script.md`：大熊猫短视频分镜脚本示例。
+- `examples/video-script-editor.html`：可编辑分镜工作台示例。
+- `examples/panda-output.md` 和 `examples/penguin-with-images.html`：旧版图文输出示例，仅作历史参考。
 
 ## 版本
 
-v1.0.0
+v2.0.0 - 从图文科普文案升级为短视频分镜脚本与 AI 生图提示词工作流。
