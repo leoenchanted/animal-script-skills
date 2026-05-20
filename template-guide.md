@@ -90,13 +90,13 @@
 中文提示词示例：
 
 ```text
-卡通科普动画风格的大熊猫，圆脸黑眼圈，坐在翠绿竹林里抱着竹子吃，表情呆萌但灵动，画面明亮干净，柔和电影感光影，16:9，无文字，无水印，不要真实照片风
+卡通科普动画风格的[动物名称]，[核心外形特征]，在[典型栖息地]中[代表性动作]，表情[情绪]，画面明亮干净，柔和电影感光影，16:9，无文字，无水印，不要真实照片风
 ```
 
 英文提示词示例：
 
 ```text
-Cartoon educational animation of a giant panda with a round face and black eye patches, sitting in a lush bamboo forest while eating bamboo, cute and expressive, bright clean composition, soft cinematic lighting, 16:9, no text, no watermark, not photorealistic
+Cartoon educational animation of a [animal name] with [key visual features], [action] in [typical habitat], [emotion] expression, bright clean composition, soft cinematic lighting, 16:9, no text, no watermark, not photorealistic
 ```
 
 ---
@@ -108,7 +108,7 @@ Cartoon educational animation of a giant panda with a round face and black eye p
 示例：
 
 ```markdown
-主角是一只卡通大熊猫，圆脸，黑眼圈明显，身体胖乎乎，黑白毛色干净，表情灵动可爱。整体风格是高质量儿童科普动画，色彩明亮，柔和自然光，所有镜头保持同一角色外观和 16:9 横屏构图。
+主角是一只卡通[动物名称]，[核心外形特征]，[体态/毛色/纹路]清晰，表情灵动。整体风格是高质量儿童科普动画，色彩明亮，柔和自然光，所有镜头保持同一角色外观和 16:9 横屏构图。
 
 通用负面限制：无文字、无水印、无 logo、不要真实照片风、不要畸形肢体、不要多余动物。
 ```

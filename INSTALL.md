@@ -21,7 +21,7 @@ your-project/
     │       ├── skill.md
     │       ├── template-default.md
     │       ├── template-guide.md
-    │       └── examples/
+    │       └── template-storyboard.html
     └── templates/
         └── animal-video-template.md  # 可选，自定义模板
 ```
@@ -42,7 +42,7 @@ cp -R animal-script-skills-main ~/.claude/skills/animal-video-script
 在 Claude Code 中输入：
 
 ```text
-我想了解大熊猫，帮我做成 60 秒卡通科普视频脚本，每段都要有 AI 生图提示词
+我想了解雪豹，帮我做成 60 秒卡通科普视频脚本，每段都要有 AI 生图提示词
 ```
 
 如果 skill 正确触发，Claude 应该会：
@@ -88,13 +88,9 @@ animal-video-script/
 ├── skill.md                         必须，核心执行说明
 ├── template-default.md              推荐，默认视频脚本模板
 ├── template-guide.md                推荐，模板编写指南
+├── template-storyboard.html         推荐，HTML 分镜工作台模板
 ├── README.md                        说明文件
-├── INSTALL.md                       安装指南
-└── examples/
-    ├── panda-video-script.md        新版分镜脚本示例
-    ├── video-script-editor.html     新版 HTML 分镜工作台
-    ├── panda-output.md              旧版 Markdown 示例
-    └── penguin-with-images.html     旧版图文 HTML 示例
+└── INSTALL.md                       安装指南
 ```
 
 ---

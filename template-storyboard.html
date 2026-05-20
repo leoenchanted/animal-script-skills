@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>动物科普短视频分镜工作台</title>
+  <style>
+    :root {
+      --page: #f5f8f7;
+      --panel: #ffffff;
+      --soft: #f8fbfa;
+      --ink: #172025;
+      --stone: #243137;
+      --muted: #68787e;
+      --line: #becbcb;
+      --accent: #3f8ca3;
+      --accent-soft: #dfeeed;
+      --warm: #c28a44;
+      --shadow: 0 18px 46px rgba(23, 32, 37, 0.14);
+      --focus: 0 0 0 3px rgba(63, 140, 163, 0.22);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        linear-gradient(115deg, rgba(255, 255, 255, 0.9), rgba(223, 238, 237, 0.78)),
+        repeating-linear-gradient(135deg, rgba(36, 49, 55, 0.035) 0 1px, transparent 1px 18px),
+        var(--page);
+    }
+
+    button, textarea { font: inherit; }
+
+    button {
+      min-height: 36px;
+      border: 1px solid var(--stone);
+      color: var(--page);
+      background: var(--stone);
+      border-radius: 6px;
+      padding: 8px 11px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(23, 32, 37, 0.18);
+    }
+
+    button:focus-visible, textarea:focus {
+      outline: none;
+      box-shadow: var(--focus);
+    }
+
+    .button-secondary {
+      background: transparent;
+      color: var(--stone);
+    }
+
+    .button-warm {
+      border-color: #9c6827;
+      background: var(--warm);
+      color: #fffaf0;
+    }
+
+    .app-shell {
+      width: min(1500px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 26px 0 44px;
+    }
+
+    .hero {
+      min-height: 250px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 440px);
+      gap: 28px;
+      align-items: stretch;
+      padding: 26px 0 22px;
+      border-bottom: 2px solid var(--stone);
+    }
+
+    .hero-copy {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 22px;
+    }
+
+    .kicker {
+      width: fit-content;
+      margin: 0 0 12px;
+      padding: 7px 10px;
+      color: var(--stone);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.64);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 900px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(38px, 6vw, 82px);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: clamp(16px, 1.8vw, 21px);
+      line-height: 1.65;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      align-content: end;
+    }
+
+    .metric {
+      min-height: 92px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+      border-radius: 8px;
+      box-shadow: 5px 5px 0 rgba(36, 49, 55, 0.08);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 12px;
+      color: var(--stone);
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 22px;
+      align-items: start;
+      margin-top: 24px;
+    }
+
+    .shot-list, .side-panel {
+      display: grid;
+      gap: 16px;
+    }
+
+    .side-panel {
+      position: sticky;
+      top: 16px;
+    }
+
+    .panel, .shot-card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel { padding: 17px; }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--stone);
+      font-size: 18px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .shot-card {
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr);
+      overflow: hidden;
+    }
+
+    .shot-rail {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 18px 14px;
+      color: var(--page);
+      background:
+        linear-gradient(180deg, rgba(63, 140, 163, 0.26), rgba(111, 142, 114, 0.18)),
+        var(--stone);
+    }
+
+    .shot-number {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 48px;
+      line-height: 0.9;
+      letter-spacing: 0;
+    }
+
+    .shot-time {
+      color: #d9e7e5;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .shot-body {
+      display: grid;
+      gap: 15px;
+      min-width: 0;
+      padding: 16px;
+    }
+
+    .shot-topline {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .shot-title {
+      margin: 0;
+      color: var(--stone);
+      font-size: 19px;
+      line-height: 1.35;
+    }
+
+    .fact-pill {
+      max-width: 220px;
+      padding: 6px 9px;
+      color: #24424a;
+      background: var(--accent-soft);
+      border: 1px solid #b4d0cf;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.25;
+      text-align: right;
+    }
+
+    .shot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 82px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--soft);
+      color: var(--ink);
+      padding: 10px 11px;
+      line-height: 1.58;
+    }
+
+    textarea.prompt {
+      min-height: 148px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .role-text { min-height: 172px; }
+    .voiceover { min-height: 310px; }
+
+    .production-note {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .source-list {
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.75;
+    }
+
+    .source-list a {
+      color: #245f6e;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      z-index: 20;
+      min-width: 120px;
+      padding: 11px 14px;
+      color: var(--page);
+      background: var(--stone);
+      border-radius: 7px;
+      text-align: center;
+      box-shadow: 0 14px 34px rgba(23, 32, 37, 0.22);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-50%) translateY(16px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 1160px) {
+      .hero, .workspace { grid-template-columns: 1fr; }
+      .side-panel { position: static; }
+    }
+
+    @media (max-width: 760px) {
+      .app-shell {
+        width: min(100% - 20px, 1500px);
+        padding-top: 14px;
+      }
+
+      .hero { min-height: 0; }
+      .metrics, .shot-grid, .shot-topline { grid-template-columns: 1fr; }
+      .shot-card { grid-template-columns: 1fr; }
+
+      .shot-rail {
+        flex-direction: row;
+        align-items: end;
+      }
+
+      .fact-pill {
+        max-width: none;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <div>
+          <p class="kicker">Animal Video Script Desk</p>
+          <h1 id="pageTitle"></h1>
+          <p class="subtitle" id="pageSubtitle"></p>
+        </div>
+        <div class="hero-actions">
+          <button type="button" data-scroll-target="shotList">查看分镜</button>
+          <button type="button" class="button-secondary" data-copy-all-prompts>复制全部提示词</button>
+          <button type="button" class="button-warm" data-copy-target="voiceover">复制口播稿</button>
+        </div>
+      </div>
+
+      <div class="metrics" aria-label="视频概览">
+        <div class="metric"><span>动物</span><strong id="metricAnimal"></strong></div>
+        <div class="metric"><span>时长</span><strong id="metricDuration"></strong></div>
+        <div class="metric"><span>镜头</span><strong id="metricShots"></strong></div>
+        <div class="metric"><span>风格</span><strong id="metricStyle"></strong></div>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="shot-list" id="shotList" aria-label="分镜列表"></section>
+
+      <aside class="side-panel">
+        <section class="panel">
+          <div class="panel-header">
+            <h2>统一角色设定</h2>
+            <button type="button" class="button-secondary" data-copy-target="roleSetting">复制</button>
+          </div>
+          <textarea class="role-text" id="roleSetting"></textarea>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>完整口播稿</h2>
+            <button type="button" class="button-secondary" data-copy-target="voiceover">复制</button>
+          </div>
+          <textarea class="voiceover" id="voiceover"></textarea>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>制作建议</h2>
+          </div>
+          <p class="production-note" id="productionNote"></p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>事实来源</h2>
+          </div>
+          <ol class="source-list" id="sourceList"></ol>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">已复制</div>
+
+  <script>
+    const project = {
+      title: "【视频标题】",
+      subtitle: "【时长】秒【动物名称】科普短视频分镜工作台。逐镜头编辑解说、画面内容、中英文生图提示词和动效建议。",
+      animal: "【动物名称】",
+      duration: "【时长】秒",
+      style: "卡通科普",
+      roleSetting: "【统一角色设定。包含动物外形、风格、光影、比例、负面限制。】",
+      voiceover: "【完整口播稿。】",
+      productionNote: "【配音、BGM、剪辑、生成一致性建议。】",
+      sources: [
+        { name: "【来源名称】", url: "#" }
+      ],
+      shots: [
+        {
+          id: "01",
+          time: "0-5s",
+          title: "【镜头标题】",
+          narration: "【解说词】",
+          visual: "【画面内容】",
+          promptCN: "【中文生图提示词】",
+          promptEN: "【English Prompt】",
+          motion: "【动效建议】",
+          fact: "【事实依据】"
+        }
+      ]
+    };
+
+    const shotList = document.getElementById("shotList");
+    const sourceList = document.getElementById("sourceList");
+    const toast = document.getElementById("toast");
+
+    function setText(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    function setValue(id, value) {
+      document.getElementById(id).value = value;
+    }
+
+    function makeField(label, value, className = "") {
+      const field = document.createElement("div");
+      field.className = `field ${className}`.trim();
+
+      const labelNode = document.createElement("label");
+      labelNode.textContent = label;
+
+      const textarea = document.createElement("textarea");
+      textarea.value = value;
+
+      field.append(labelNode, textarea);
+      return field;
+    }
+
+    function makePrompt(label, value, id) {
+      const field = makeField(label, value);
+      const textarea = field.querySelector("textarea");
+      textarea.className = "prompt";
+      textarea.id = id;
+      return field;
+    }
+
+    function renderShots() {
+      shotList.replaceChildren();
+
+      project.shots.forEach((shot) => {
+        const card = document.createElement("article");
+        card.className = "shot-card";
+        card.id = `shot-${shot.id}`;
+
+        const rail = document.createElement("div");
+        rail.className = "shot-rail";
+
+        const number = document.createElement("div");
+        number.className = "shot-number";
+        number.textContent = shot.id;
+
+        const time = document.createElement("div");
+        time.className = "shot-time";
+        time.textContent = shot.time;
+
+        rail.append(number, time);
+
+        const body = document.createElement("div");
+        body.className = "shot-body";
+
+        const topline = document.createElement("div");
+        topline.className = "shot-topline";
+
+        const title = document.createElement("h2");
+        title.className = "shot-title";
+        title.textContent = shot.title;
+
+        const fact = document.createElement("div");
+        fact.className = "fact-pill";
+        fact.textContent = shot.fact;
+
+        topline.append(title, fact);
+
+        const grid = document.createElement("div");
+        grid.className = "shot-grid";
+        grid.append(
+          makeField("解说词", shot.narration),
+          makeField("画面内容", shot.visual),
+          makePrompt("中文生图提示词", shot.promptCN, `cn-${shot.id}`),
+          makePrompt("English Prompt", shot.promptEN, `en-${shot.id}`),
+          makeField("动效建议", shot.motion, "full")
+        );
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const copyCN = document.createElement("button");
+        copyCN.type = "button";
+        copyCN.dataset.copyTarget = `cn-${shot.id}`;
+        copyCN.textContent = "复制中文提示词";
+
+        const copyEN = document.createElement("button");
+        copyEN.type = "button";
+        copyEN.className = "button-secondary";
+        copyEN.dataset.copyTarget = `en-${shot.id}`;
+        copyEN.textContent = "复制 English Prompt";
+
+        actions.append(copyCN, copyEN);
+        body.append(topline, grid, actions);
+        card.append(rail, body);
+        shotList.append(card);
+      });
+    }
+
+    function renderSources() {
+      sourceList.replaceChildren();
+
+      project.sources.forEach((source) => {
+        const item = document.createElement("li");
+        const link = document.createElement("a");
+        link.href = source.url;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = source.name;
+        item.append(link);
+        sourceList.append(item);
+      });
+    }
+
+    function collectAllPrompts() {
+      return project.shots.map((shot) => {
+        const cn = document.getElementById(`cn-${shot.id}`)?.value || shot.promptCN;
+        const en = document.getElementById(`en-${shot.id}`)?.value || shot.promptEN;
+        return `镜头 ${shot.id} ${shot.time}\n中文：${cn}\nEnglish: ${en}`;
+      }).join("\n\n");
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1500);
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const helper = document.createElement("textarea");
+      helper.value = text;
+      helper.setAttribute("readonly", "");
+      helper.style.position = "fixed";
+      helper.style.left = "-9999px";
+      document.body.appendChild(helper);
+      helper.select();
+      document.execCommand("copy");
+      helper.remove();
+    }
+
+    document.addEventListener("click", async (event) => {
+      const scrollButton = event.target.closest("[data-scroll-target]");
+      if (scrollButton) {
+        document.getElementById(scrollButton.dataset.scrollTarget)?.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+
+      const allPromptsButton = event.target.closest("[data-copy-all-prompts]");
+      if (allPromptsButton) {
+        await copyText(collectAllPrompts());
+        showToast("全部提示词已复制");
+        return;
+      }
+
+      const copyButton = event.target.closest("[data-copy-target]");
+      if (!copyButton) return;
+
+      const target = document.getElementById(copyButton.dataset.copyTarget);
+      if (!target) return;
+
+      await copyText(target.value || target.textContent || "");
+      showToast("已复制到剪贴板");
+    });
+
+    document.title = `${project.animal}科普短视频分镜工作台`;
+    setText("pageTitle", project.title);
+    setText("pageSubtitle", project.subtitle);
+    setText("metricAnimal", project.animal);
+    setText("metricDuration", project.duration);
+    setText("metricShots", `${project.shots.length} 个`);
+    setText("metricStyle", project.style);
+    setText("productionNote", project.productionNote);
+    setValue("roleSetting", project.roleSetting);
+    setValue("voiceover", project.voiceover);
+    renderShots();
+    renderSources();
+  </script>
+</body>
+</html>
