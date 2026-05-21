@@ -18,10 +18,11 @@ your-project/
 └── .claude/
     ├── skills/
     │   └── animal-video-script/
-    │       ├── skill.md
+    │       ├── SKILL.md
     │       ├── template-default.md
     │       ├── template-guide.md
-    │       └── template-storyboard.html
+    │       └── examples/
+    │           └── style-templates/
     └── templates/
         └── animal-video-template.md  # 可选，自定义模板
 ```
@@ -81,16 +82,34 @@ touch your-project/.claude/templates/animal-video-template.md
 
 ---
 
+## 叙事风格样本
+
+如果想让 skill 参考某种短视频脚本的语气、开头、节奏和故事推进方式，把 `.txt` 样本放到：
+
+```text
+animal-video-script/examples/style-templates/
+```
+
+这些样本只用于风格参考，不作为事实来源。生成新动物脚本时，仍然需要重新搜索并核验动物事实。
+
+---
+
 ## 文件清单
 
 ```text
 animal-video-script/
-├── skill.md                         必须，核心执行说明
+├── SKILL.md                         必须，核心执行说明
 ├── template-default.md              推荐，默认视频脚本模板
 ├── template-guide.md                推荐，模板编写指南
 ├── template-storyboard.html         推荐，HTML 分镜工作台模板
 ├── README.md                        说明文件
-└── INSTALL.md                       安装指南
+├── INSTALL.md                       安装指南
+└── examples/
+    ├── panda-video-script.md        新版分镜脚本示例
+    ├── video-script-editor.html     新版 HTML 分镜工作台
+    ├── style-templates/             叙事风格样本库
+    ├── panda-output.md              旧版 Markdown 示例
+    └── penguin-with-images.html     旧版图文 HTML 示例
 ```
 
 ---

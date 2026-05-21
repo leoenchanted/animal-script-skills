@@ -20,10 +20,11 @@
 
 ```text
 your-project/.claude/skills/animal-video-script/
-├── skill.md
+├── SKILL.md
 ├── template-default.md
 ├── template-guide.md
-└── template-storyboard.html
+└── examples/
+    └── style-templates/
 ```
 
 ### 可选：自定义模板
@@ -35,6 +36,16 @@ your-project/.claude/templates/animal-video-template.md
 ```
 
 Claude 会优先读取这个模板；如果没有模板，就使用本目录的 `template-default.md`。
+
+### 可选：叙事风格样本
+
+如果你想让脚本参考某种语气、节奏、开头感觉或故事推进方式，可以把 `.txt` 样本放到：
+
+```text
+animal-video-script/examples/style-templates/
+```
+
+这些文件只作为风格参考，不作为事实来源。Claude 会根据新动物的事实资料选择和融合合适的样本风格。
 
 ## 使用方法
 
@@ -73,11 +84,11 @@ Markdown:
 
 同时创建本地 HTML 文件：
 
-```text
-[animal-name]-storyboard.html
-```
 
-HTML 工作台包含镜头卡片、可编辑文本框、统一角色设定、完整口播稿、事实来源链接，以及复制单条/全部提示词的按钮。
+- `examples/panda-video-script.md`：大熊猫短视频分镜脚本示例。
+- `examples/video-script-editor.html`：可编辑分镜工作台示例。
+- `examples/style-templates/`：可扩展的叙事风格样本库。
+- `examples/panda-output.md` 和 `examples/penguin-with-images.html`：旧版图文输出示例，仅作历史参考。
 
 ## 版本
 
