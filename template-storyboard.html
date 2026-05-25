@@ -276,6 +276,65 @@
       gap: 12px;
     }
 
+    .cinematic-section {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .cinematic-section-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .cinematic-section-label span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .cinematic-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .cinematic-field {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .cinematic-field label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .cinematic-field textarea {
+      width: 100%;
+      min-height: 40px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--soft);
+      color: var(--ink);
+      padding: 5px 7px;
+      font-size: 12px;
+      line-height: 1.45;
+      font-family: inherit;
+    }
+
+    .cinematic-field textarea:focus {
+      outline: none;
+      box-shadow: var(--focus);
+    }
+
     .field {
       display: grid;
       gap: 7px;
@@ -466,10 +525,19 @@
       shots: [
         {
           id: "01",
-          time: "0-5s",
+          time: "0-8s",
           title: "【镜头标题】",
           narration: "【解说词】",
           visual: "【画面内容】",
+          shotType: "【景别】",
+          subject: "【主体】",
+          action: "【动作】",
+          environment: "【环境】",
+          lighting: "【光线】",
+          camera: "【运镜】",
+          emotion: "【情绪】",
+          style: "【风格】",
+          setting: "【设定】",
           promptCN: "【中文生图提示词】",
           promptEN: "【English Prompt】",
           motion: "【动效建议】",
@@ -512,6 +580,27 @@
       return field;
     }
 
+    function makeCinematicField(label, value, id) {
+      const field = document.createElement("div");
+      field.className = "cinematic-field";
+
+      const labelNode = document.createElement("label");
+      labelNode.textContent = label;
+
+      const textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.id = id;
+      textarea.rows = 1;
+
+      field.append(labelNode, textarea);
+      return field;
+    }
+
+    function hasCinematicFields(shot) {
+      return shot.shotType || shot.subject || shot.action || shot.environment ||
+             shot.lighting || shot.camera || shot.emotion || shot.style || shot.setting;
+    }
+
     function renderShots() {
       shotList.replaceChildren();
 
@@ -549,6 +638,51 @@
 
         topline.append(title, fact);
 
+        const hasCin = hasCinematicFields(shot);
+        let cinematicSection = null;
+        if (hasCin) {
+          cinematicSection = document.createElement("div");
+          cinematicSection.className = "cinematic-section";
+
+          const cinematicLabel = document.createElement("div");
+          cinematicLabel.className = "cinematic-section-label";
+
+          const labelSpan = document.createElement("span");
+          labelSpan.textContent = "电影分镜设定";
+
+          const copyCinematic = document.createElement("button");
+          copyCinematic.type = "button";
+          copyCinematic.className = "button-secondary";
+          copyCinematic.dataset.copyTarget = `cinematic-${shot.id}`;
+          copyCinematic.textContent = "复制设定";
+          copyCinematic.style.fontSize = "11px";
+          copyCinematic.style.padding = "4px 8px";
+          copyCinematic.style.minHeight = "0";
+
+          cinematicLabel.append(labelSpan, copyCinematic);
+
+          const cinematicGrid = document.createElement("div");
+          cinematicGrid.className = "cinematic-grid";
+
+          const cinFields = [
+            { key: "shotType", label: "景别", value: shot.shotType || "" },
+            { key: "subject", label: "主体", value: shot.subject || "" },
+            { key: "action", label: "动作", value: shot.action || "" },
+            { key: "environment", label: "环境", value: shot.environment || "" },
+            { key: "lighting", label: "光线", value: shot.lighting || "" },
+            { key: "camera", label: "运镜", value: shot.camera || "" },
+            { key: "emotion", label: "情绪", value: shot.emotion || "" },
+            { key: "style", label: "风格", value: shot.style || "" },
+            { key: "setting", label: "设定", value: shot.setting || "" }
+          ];
+
+          cinFields.forEach((f) => {
+            cinematicGrid.append(makeCinematicField(f.label, f.value, `cin-${shot.id}-${f.key}`));
+          });
+
+          cinematicSection.append(cinematicLabel, cinematicGrid);
+        }
+
         const grid = document.createElement("div");
         grid.className = "shot-grid";
         grid.append(
@@ -574,7 +708,11 @@
         copyEN.textContent = "复制 English Prompt";
 
         actions.append(copyCN, copyEN);
-        body.append(topline, grid, actions);
+        if (hasCin) {
+          body.append(topline, cinematicSection, grid, actions);
+        } else {
+          body.append(topline, grid, actions);
+        }
         card.append(rail, body);
         shotList.append(card);
       });
@@ -601,6 +739,24 @@
         const en = document.getElementById(`en-${shot.id}`)?.value || shot.promptEN;
         return `镜头 ${shot.id} ${shot.time}\n中文：${cn}\nEnglish: ${en}`;
       }).join("\n\n");
+    }
+
+    function collectCinematic(shotId) {
+      const keys = [
+        { key: "shotType", label: "景别" },
+        { key: "subject", label: "主体" },
+        { key: "action", label: "动作" },
+        { key: "environment", label: "环境" },
+        { key: "lighting", label: "光线" },
+        { key: "camera", label: "运镜" },
+        { key: "emotion", label: "情绪" },
+        { key: "style", label: "风格" },
+        { key: "setting", label: "设定" }
+      ];
+      return keys.map((k) => {
+        const el = document.getElementById(`cin-${shotId}-${k.key}`);
+        return `${k.label}：${el ? el.value : ""}`;
+      }).join("\n");
     }
 
     function showToast(message) {
@@ -644,7 +800,18 @@
       const copyButton = event.target.closest("[data-copy-target]");
       if (!copyButton) return;
 
-      const target = document.getElementById(copyButton.dataset.copyTarget);
+      const targetId = copyButton.dataset.copyTarget;
+
+      if (targetId.startsWith("cinematic-")) {
+        const shotId = targetId.replace("cinematic-", "");
+        const shot = project.shots.find((s) => s.id === shotId);
+        const header = `镜头 ${shotId} ${shot ? shot.time : ""} 电影分镜设定`;
+        await copyText(header + "\n" + collectCinematic(shotId));
+        showToast("电影设定已复制");
+        return;
+      }
+
+      const target = document.getElementById(targetId);
       if (!target) return;
 
       await copyText(target.value || target.textContent || "");

@@ -8,7 +8,7 @@
 
 ```bash
 mkdir -p your-project/.claude/skills
-cp -R animal-script-skills-main your-project/.claude/skills/animal-video-script
+cp -R animal-script-skills your-project/.claude/skills/animal-video-script
 ```
 
 推荐目录结构：
@@ -20,9 +20,13 @@ your-project/
     │   └── animal-video-script/
     │       ├── SKILL.md
     │       ├── template-default.md
+    │       ├── template-prehistoric.md
     │       ├── template-guide.md
+    │       ├── template-storyboard.html
     │       └── examples/
     │           └── style-templates/
+    │               ├── prehistoric-leviathan-survival.txt
+    │               └── prehistoric-pterosaur-survival.txt
     └── templates/
         └── animal-video-template.md  # 可选，自定义模板
 ```
@@ -33,12 +37,14 @@ your-project/
 
 ```bash
 mkdir -p ~/.claude/skills
-cp -R animal-script-skills-main ~/.claude/skills/animal-video-script
+cp -R animal-script-skills ~/.claude/skills/animal-video-script
 ```
 
 ---
 
 ## 验证安装
+
+### 标准科普模型
 
 在 Claude Code 中输入：
 
@@ -50,9 +56,25 @@ cp -R animal-script-skills-main ~/.claude/skills/animal-video-script
 
 1. 搜索权威动物资料。
 2. 输出视频设定和统一角色设定。
-3. 生成逐镜头分镜表。
+3. 生成逐镜头分镜表（10-15 个镜头）。
 4. 每个镜头给出中文生图提示词和英文 Prompt。
 5. 追加完整口播稿、剪辑建议和事实参考来源。
+6. 创建本地 HTML 分镜工作台。
+
+### 史前穿越沉浸式解说模型
+
+在 Claude Code 中输入：
+
+```text
+如果把利维坦鲸扔进现代太平洋，它还能成为霸主吗
+```
+
+如果 skill 正确触发，Claude 应该会：
+
+1. 自动识别为「史前穿越」模式（无需手动指定）。
+2. 双线搜索：古生物学数据 + 现代环境参照数据。
+3. 输出 10 步情绪递进分镜，每个镜头包含 9 个电影级字段（景别、主体、动作、环境、光线、运镜、情绪、风格、设定）。
+4. 创建本地 HTML 分镜工作台，分镜卡片含可编辑电影设定区域。
 
 ---
 
@@ -76,6 +98,8 @@ touch your-project/.claude/templates/animal-video-template.md
 - AI 生图清单
 - 事实参考来源
 
+自定义模板会覆盖 `template-default.md` 和 `template-prehistoric.md` 两者，Claude 会按你的模板结构输出。
+
 ### 步骤 3：使用
 
 告诉 Claude 想制作的动物视频主题，它会优先按你的模板生成。
@@ -92,29 +116,44 @@ animal-video-script/examples/style-templates/
 
 这些样本只用于风格参考，不作为事实来源。生成新动物脚本时，仍然需要重新搜索并核验动物事实。
 
+本 skill 内置了两个史前穿越风格样本（利维坦鲸和风神翼龙），当你请求史前穿越模型时，Claude 会自动读取它们来学习叙事节奏和情绪推进方式。
+
 ---
 
 ## 文件清单
 
 ```text
 animal-video-script/
-├── SKILL.md                         必须，核心执行说明
-├── template-default.md              推荐，默认视频脚本模板
-├── template-guide.md                推荐，模板编写指南
-├── template-storyboard.html         推荐，HTML 分镜工作台模板
-├── README.md                        说明文件
-├── INSTALL.md                       安装指南
+├── SKILL.md                          必须，核心执行说明（含两种叙事模型分支逻辑）
+├── template-default.md               推荐，标准科普模板
+├── template-prehistoric.md           推荐，史前穿越沉浸式解说模板（10 步情绪递进）
+├── template-guide.md                 推荐，模板编写指南（含 9 电影字段说明）
+├── template-storyboard.html          推荐，HTML 分镜工作台模板（含电影字段渲染）
+├── README.md                         说明文件
+├── INSTALL.md                        安装指南
 └── examples/
-    ├── panda-video-script.md        新版分镜脚本示例
-    ├── video-script-editor.html     新版 HTML 分镜工作台
-    ├── style-templates/             叙事风格样本库
-    ├── panda-output.md              旧版 Markdown 示例
-    └── penguin-with-images.html     旧版图文 HTML 示例
+    └── style-templates/
+        ├── prehistoric-leviathan-survival.txt    利维坦鲸叙事风格样本
+        └── prehistoric-pterosaur-survival.txt    风神翼龙叙事风格样本
 ```
 
 ---
 
 ## 常见问题
+
+### Q: 两种模型怎么切换？需要手动告诉 Claude 吗？
+
+不需要。Claude 会自动根据你的提问判断：
+- 如果你问"介绍雪豹"、"写蓝鲸科普"等 → 标准科普模型
+- 如果你问"XX能活在现代吗"、"穿越到现代会怎样"等 → 史前穿越模型
+
+你也可以手动指定：在提问中说明"用标准科普风格"或"用史前穿越风格"。
+
+### Q: 史前穿越模型的 9 个电影字段在 HTML 里能编辑吗？
+
+可以。生成的 HTML 分镜工作台中，每个分镜卡片都包含「电影分镜设定」区域，所有 9 个字段（景别、主体、动作、环境、光线、运镜、情绪、风格、设定）都是可编辑的 textarea，也可以一键复制。
+
+如果使用的是标准科普模型生成的不含电影字段，HTML 会自动隐藏该区域。
 
 ### Q: 为什么不直接给真实图片？
 
@@ -126,7 +165,7 @@ animal-video-script/
 
 ### Q: 角色每张图不一致怎么办？
 
-优先复制“统一角色设定”，再把单个镜头提示词接在后面一起使用。必要时在生图工具里固定 seed 或使用角色参考图。
+优先复制"统一角色设定"，再把单个镜头提示词接在后面一起使用。必要时在生图工具里固定 seed 或使用角色参考图。
 
 ### Q: 能改成 9:16 竖屏吗？
 
